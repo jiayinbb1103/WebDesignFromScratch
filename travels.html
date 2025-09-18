@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Travels</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+    <link rel="icon" href="favicon/favicon.ico" type="image/x-icon">
+    <link href="dist/css/lightbox.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+</head>
+
+<body class="travels-page">
+    <div id="container">
+    <a href="#main_content">Skip to Main Content</a>
+    <header>
+        <nav>
+            <ul>
+                <img id="logo" src="images/myself.PNG" alt="logo">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="articles.html">My Articles</a></li>
+                <li><a href="travels.html">My Travels</a></li>
+            </ul>
+        </nav>
+        <h1>My Travels</h1>
+    </header>
+    <main id="main_content">
+        <!-- Map Container -->
+        <div class="map-section">
+            <div class="view-toggle">
+                <button id="map-view-btn" class="view-btn active">Map View</button>
+                <button id="grid-view-btn" class="view-btn">Grid View</button>
+            </div>
+            <div id="travel-map"></div>
+        </div>
+
+        <div class="travel-grid" id="travel-grid">
+            <a href="images/travel1.jpg" data-lightbox="travel-set" data-title="Teshima Art Museum, Japan">
+                <img src="images/travel1.jpg" alt="Teshima Art Museum, Japan">
+            </a>
+            <a href="images/travel2.jpg" data-lightbox="travel-set" data-title="Temple of the Golden Pavilion, Japan">
+                <img src="images/travel2.jpg" alt="Temple of the Golden Pavilion, Japan">
+            </a>
+            <a href="images/travel3.jpg" data-lightbox="travel-set" data-title="Buildings in Prag">
+                <img src="images/travel3.jpg" alt="Buildings in Prag">
+            </a>
+            <a href="images/travel4.jpg" data-lightbox="travel-set" data-title="Takamatsu, Japan">
+                <img src="images/travel4.jpg" alt="Takamatsu, Japan">
+            </a>
+            <a href="images/travel5.jpg" data-lightbox="travel-set" data-title="Nice, South France">
+                <img src="images/travel5.jpg" alt="Nice, South France">
+            </a>
+            <a href="images/travel6.jpg" data-lightbox="travel-set" data-title="The Fort Canning Tree Tunnel, Singapore">
+                <img src="images/travel6.jpg" alt="The Fort Canning Tree Tunnel, Singapore">
+            </a>
+        </div>
+    </main>
+    </div>
+    <footer class="travels-page">
+        <p>This page is created by Jiayin</p>
+    </footer>
+    <script src="dist/js/lightbox-plus-jquery.js"></script>
+    <script>
+        // Travel photo data with coordinates
+        const travelData = [
+            {
+                title: "Teshima Art Museum, Japan",
+                image: "images/travel1.jpg",
+                lat: 34.4833,
+                lng: 134.0833
+            },
+            {
+                title: "Temple of the Golden Pavilion, Japan",
+                image: "images/travel2.jpg",
+                lat: 35.0394,
+                lng: 135.7292
+            },
+            {
+                title: "Buildings in Prague",
+                image: "images/travel3.jpg",
+                lat: 50.0755,
+                lng: 14.4378
+            },
+            {
+                title: "Takamatsu, Japan",
+                image: "images/travel4.jpg",
+                lat: 34.3401,
+                lng: 134.0434
+            },
+            {
+                title: "Nice, South France",
+                image: "images/travel5.jpg",
+                lat: 43.7102,
+                lng: 7.2620
+            },
+            {
+                title: "The Fort Canning Tree Tunnel, Singapore",
+                image: "images/travel6.jpg",
+                lat: 1.2966,
+                lng: 103.8467
+            }
+        ];
+
+        let map;
+        let currentView = 'map';
+
+        // Initialize map
+        function initMap() {
+            map = L.map('travel-map').setView([35.0, 135.0], 3);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add photo markers
+            travelData.forEach(photo => {
+                const marker = createPhotoMarker(photo);
+                marker.addTo(map);
+            });
+        }
+
+        // Create custom photo thumbnail marker
+        function createPhotoMarker(photo) {
+            const markerIcon = L.divIcon({
+                html: `
+                    <div class="photo-marker" onclick="openLightbox('${photo.image}', '${photo.title}')" role="button" tabindex="0" aria-label="${photo.title}">
+                        <div class="photo-card">
+                            <img src="${photo.image}" alt="${photo.title}" class="photo-thumbnail">
+                            <div class="magnify-overlay">
+                                <i class="fas fa-search-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                className: 'custom-marker',
+                iconSize: [80, 60],
+                iconAnchor: [40, 60]
+            });
+
+            const marker = L.marker([photo.lat, photo.lng], {
+                icon: markerIcon,
+                keyboard: false,
+                riseOnHover: true
+            });
+
+            // Add tooltip without ARIA references
+            marker.bindTooltip(photo.title, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -10],
+                className: 'custom-tooltip'
+            });
+
+            // Remove problematic ARIA attributes after marker is added
+            marker.on('add', function() {
+                setTimeout(() => {
+                    const markerElement = marker.getElement();
+                    if (markerElement) {
+                        markerElement.removeAttribute('aria-describedby');
+                        markerElement.removeAttribute('role');
+                        markerElement.removeAttribute('tabindex');
+                    }
+                }, 100);
+            });
+
+            return marker;
+        }
+
+        // Open lightbox for photo
+        function openLightbox(imageSrc, title) {
+            // Create a temporary link and trigger lightbox
+            const tempLink = document.createElement('a');
+            tempLink.href = imageSrc;
+            tempLink.setAttribute('data-lightbox', 'travel-map');
+            tempLink.setAttribute('data-title', title);
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            document.body.removeChild(tempLink);
+        }
+
+        // View toggle functionality
+        function toggleView(view) {
+            const mapSection = document.querySelector('.map-section');
+            const gridSection = document.getElementById('travel-grid');
+            const mapBtn = document.getElementById('map-view-btn');
+            const gridBtn = document.getElementById('grid-view-btn');
+
+            if (view === 'map') {
+                mapSection.style.display = 'block';
+                gridSection.style.display = 'none';
+                mapBtn.classList.add('active');
+                gridBtn.classList.remove('active');
+                currentView = 'map';
+                setTimeout(() => map.invalidateSize(), 100);
+            } else {
+                mapSection.style.display = 'none';
+                gridSection.style.display = 'grid';
+                gridBtn.classList.add('active');
+                mapBtn.classList.remove('active');
+                currentView = 'grid';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('map-view-btn').addEventListener('click', () => toggleView('map'));
+        document.getElementById('grid-view-btn').addEventListener('click', () => toggleView('grid'));
+
+        // Initialize map when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            toggleView('map'); // Start with map view
+        });
+    </script>
+</body>
+
+</html>
